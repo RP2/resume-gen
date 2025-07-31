@@ -1,0 +1,6 @@
+requests
+markdown
+weasyprint
+python-dotenv
+PyPDF2
+sentence-transformers
