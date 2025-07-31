@@ -1,6 +1,6 @@
-# custom-resumes
+# Resume Generator
 
-Generate tailored, AI-powered resumes for each job listing using your existing resume files and job descriptions. Supports batch processing, professional PDF output, and experimental docx output.
+Automate the process of generating tailored, AI-powered resumes for each job listing using your existing resume files and job descriptions. Supports batch processing, professional PDF output, and experimental docx output.
 
 ## Features
 
