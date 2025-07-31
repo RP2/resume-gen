@@ -89,4 +89,4 @@ MIT
 
 ---
 
-Built with ❤️ by Riley Peralta & The Robots
+Built with ❤️ by Riley Peralta & Artificial Intelligence
