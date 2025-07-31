@@ -4,3 +4,6 @@ weasyprint
 python-dotenv
 PyPDF2
 sentence-transformers
+tiktoken
+python-docx
+beautifulsoup4

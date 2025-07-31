@@ -1,70 +1,87 @@
-# Custom Resume Generator
+# custom-resumes
 
-Generate highly tailored, ATS-friendly resumes for any job description using AI and your own mega-resume as the source. This tool leverages OpenAI's API and retrieval-augmented generation (RAG) techniques to maximize your chances of landing an interview.
+Generate tailored, AI-powered resumes for each job listing using your existing resume files and job descriptions. Supports batch processing, professional PDF output, and experimental docx output.
 
 ## Features
 
-- **Batch Resume Generation:** Generate a unique, optimized resume PDF for each job description in a folder.
-- **Retrieval-Augmented Generation (RAG):** Extracts keywords from job posts, selects the most relevant sections of your resume, and summarizes job requirements for focused, high-quality output.
-- **OpenAI API Integration:** Uses GPT-4o (or your chosen model) for best-in-class resume rewriting.
-- **PDF Output:** Produces ready-to-send, visually appealing PDF resumes.
-- **Semantic HTML:** Ensures accessibility and ATS compatibility.
-- **Modular & Extensible:** Easy to add new features, models, or providers.
+- Modular Python CLI tool
+- Loads all resume files from the `in/` directory (supports `.md`, `.txt`, `.pdf`, `.docx`)
+- Ignores files with no extension and instruction files
+- Optional `coverletter.txt` support
+- Batch processes all jobs in the `jobs/` directory
+- RAG context extraction for richer, more relevant resumes
+- Token usage and model logging
+- Professional PDF output (WeasyPrint, Google Fonts)
+- Experimental docx output (python-docx)
+- Robust error handling and logging
+- No fabricated achievements; visible URLs in contact info
+- Comprehensive README and LICENSE
 
-## How It Works
+## Quickstart
 
-1. **Prepare your mega-resume** (markdown or text) with all your experience, skills, and projects.
-2. **Add job descriptions** (markdown files) to the `jobs/` directory.
-3. **Run the CLI:**
-
-   ```bash
-   python main.py --base-resume in/base_resume.md --jobs jobs --output out
-   ```
-
-4. For each job, the script:
-   - Extracts keywords and requirements from the job post
-   - Selects the most relevant sections of your resume
-   - Summarizes the job post
-   - Builds a custom prompt for the AI
-   - Generates a tailored HTML resume and converts it to PDF
-   - Saves the PDF in the output directory
-
-## Requirements
-
-- Python 3.8+
-- See `requirements.txt` for dependencies
-- OpenAI API key (set in `.env` or via `--openai-key`)
-
-## Setup
-
-1. Clone the repo and create a virtual environment:
+1. **Set up a virtual environment (recommended):**
 
    ```bash
    python3 -m venv .venv
    source .venv/bin/activate
+   ```
+
+2. **Install dependencies:**
+
+   ```bash
    pip install -r requirements.txt
    ```
 
-2. Copy `.env.example` to `.env` and add your OpenAI API key.
-3. Place your mega-resume in `in/base_resume.md` and job descriptions in the `jobs/` folder.
+3. **Set up your API key:**
 
-## Example Usage
+   - Copy `.env.example` to `.env` and add your OpenAI API key
+   - Or use `--openai-key` flag
 
-```bash
-python main.py --base-resume in/base_resume.md --jobs jobs --output out
-```
+4. **Prepare your files:**
 
-## Project Structure
+   - Place all resume files in the `in/` directory (`.md`, `.txt`, `.pdf`, `.docx`)
+   - Add an optional `coverletter.txt` to `in/`
+   - Place job descriptions in the `jobs/` directory
 
-- `main.py` — CLI and pipeline logic
-- `utils/parser.py` — File reading utilities
-- `utils/pdf.py` — HTML to PDF conversion
-- `utils/llm.py` — LLM provider logic
-- `utils/rag.py` — RAG context (keywords, section selection, summary)
-- `requirements.txt` — All dependencies
-- `in/base_resume.md` — Your mega-resume
-- `jobs/` — Job description files
-- `out/` — Output PDFs
+5. **Run the script:**
+
+   ```bash
+   python main.py --input in --jobs jobs --output out --model gpt-4o
+   ```
+
+   - Add `--docx` to also output experimental Word resumes
+
+## Output
+
+- PDF resumes saved to `out/` (default)
+- Experimental docx resumes saved to `out/` if `--docx` is used
+
+## Advanced Options
+
+- Model selection: `--model gpt-4o` (default)
+- API key: `--openai-key <key>` or set `OPENAI_API_KEY` in `.env`
+- Output directory: `--output out`
+
+## Notes
+
+- Docx output is experimental and may have formatting issues
+- All resume files in `in/` are combined for context
+- Instruction files (no extension) are ignored
+- Cover letter is optional and loaded from `in/coverletter.txt`
+
+## Pre-Publish Checklist
+
+- [x] Modular CLI structure
+- [x] Loads all resume files from `in/` directory
+- [x] Ignores instruction files and files with no extension
+- [x] Batch processes all jobs in `jobs/`
+- [x] RAG context extraction for richer resumes
+- [x] Token usage and model logging
+- [x] Professional PDF output (WeasyPrint, Google Fonts)
+- [x] Experimental docx output (python-docx)
+- [x] Robust error handling and logging
+- [x] No fabricated achievements; visible URLs in contact info
+- [x] Comprehensive README and LICENSE
 
 ## License
 

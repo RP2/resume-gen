@@ -30,6 +30,7 @@ ENV/
 env/
 env.bak/
 venv.bak/
+.env
 
 # PyInstaller
 *.manifest
@@ -73,5 +74,7 @@ dmypy.json
 jobs/*.md
 jobs/*.txt
 out/*.pdf
+out/*.docx
 in/*.md
 in/*.pdf
+in/*.txt
