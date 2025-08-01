@@ -185,6 +185,46 @@ def summarize_job_post(job: str, max_tokens: int = 128) -> str:
     return summary[:max_tokens*5]
 
 
+def enhance_bullet_points(bullets: List[str], job_desc: str) -> List[str]:
+    """Enhance bullet points to better align with job requirements while maintaining truthfulness."""
+    try:
+        # Extract key verbs and skills from job description
+        job_verbs = set(re.findall(r'\b(?:develop|create|manage|lead|design|implement|analyze|improve|coordinate|drive|deliver|build|architect|optimize|mentor|scale|support|collaborate|engineer|research|maintain|test|deploy|enable|solve)\w*\b', job_desc.lower()))
+        job_skills = set(re.findall(r'\b(?:agile|scrum|kanban|ci/cd|cloud|aws|azure|gcp|docker|kubernetes|microservices|rest|api|sql|nosql|python|java|javascript|react|node|angular|vue|typescript|go|rust|c\+\+|scala|ruby|php|swift|kotlin|dart|flutter|mobile|web|frontend|backend|fullstack|architecture|testing|security|performance|scalability|reliability|monitoring|logging|analytics|ml|ai|data|infrastructure|devops|sre|platform)\b', job_desc.lower()))
+        
+        enhanced_bullets = []
+        for bullet in bullets:
+            bullet = bullet.strip().lstrip('•-*').strip()
+            if not bullet:
+                continue
+                
+            # Check if bullet starts with a strong action verb, if not try to enhance it
+            first_word = bullet.split()[0].lower()
+            if first_word not in job_verbs and len(bullet.split()) > 3:
+                # Find a relevant verb from the job description
+                for verb in job_verbs:
+                    if verb in bullet.lower():
+                        # Restructure to lead with this verb
+                        bullet = bullet[0].upper() + bullet[1:]
+                        break
+            
+            # Highlight relevant skills that appear in both bullet and job
+            bullet_skills = set(re.findall(r'\b(?:agile|scrum|kanban|ci/cd|cloud|aws|azure|gcp|docker|kubernetes|microservices|rest|api|sql|nosql|python|java|javascript|react|node|angular|vue|typescript|go|rust|c\+\+|scala|ruby|php|swift|kotlin|dart|flutter|mobile|web|frontend|backend|fullstack|architecture|testing|security|performance|scalability|reliability|monitoring|logging|analytics|ml|ai|data|infrastructure|devops|sre|platform)\b', bullet.lower()))
+            common_skills = bullet_skills & job_skills
+            
+            # If we have common skills, ensure they're properly emphasized
+            if common_skills:
+                for skill in common_skills:
+                    # Capitalize the skill in the bullet point if it's not already
+                    bullet = re.sub(rf'\b{skill}\b', lambda m: m.group(0).title(), bullet, flags=re.IGNORECASE)
+            
+            enhanced_bullets.append(bullet)
+            
+        return enhanced_bullets
+    except Exception as e:
+        logging.error(f"Error enhancing bullet points: {e}")
+        return [b.strip().lstrip('•-*').strip() for b in bullets if b.strip()]
+
 def build_rag_context(base_resume: str, job: str) -> Tuple[str, List[str], str]:
     """Build a RAG context: extract keywords, select relevant resume sections, and summarize job post. Logs warnings for empty/malformed input."""
     if not base_resume:
@@ -226,16 +266,35 @@ def build_rag_context(base_resume: str, job: str) -> Tuple[str, List[str], str]:
                         items.append(line)
                 content = ', '.join(items)
             else:
-                # For other sections, preserve bullet points
-                lines = []
+                # For other sections, process bullet points
+                bullet_lines = []
+                current_bullets = []
+                
                 for line in content.split('\n'):
                     line = line.strip()
                     if line.startswith('•') or line.startswith('-') or line.startswith('*'):
-                        lines.append(line)
+                        # If we have accumulated non-bullet content, add it
+                        if current_bullets:
+                            # Enhance bullets if this is an experience/project section
+                            if any(keyword in header.lower() for keyword in ['experience', 'project', 'achievement']):
+                                current_bullets = enhance_bullet_points(current_bullets, job)
+                            bullet_lines.extend('• ' + b for b in current_bullets)
+                            current_bullets = []
+                        current_bullets.append(line.lstrip('•-*').strip())
                     elif line:
-                        lines[-1] = lines[-1] + ' ' + line if lines else line
+                        if current_bullets:
+                            current_bullets[-1] = current_bullets[-1] + ' ' + line
+                        else:
+                            bullet_lines.append(line)
                 
-                content = ' '.join(lines)
+                # Process any remaining bullets
+                if current_bullets:
+                    # Enhance bullets if this is an experience/project section
+                    if any(keyword in header.lower() for keyword in ['experience', 'project', 'achievement']):
+                        current_bullets = enhance_bullet_points(current_bullets, job)
+                    bullet_lines.extend('• ' + b for b in current_bullets)
+                
+                content = ' '.join(bullet_lines)
         
         # Combine header and cleaned content
         cleaned_section = header
