@@ -8,13 +8,15 @@ Automate the process of generating tailored, AI-powered resumes for each job lis
 - Loads all resume files from the `in/` directory (supports `.md`, `.txt`, `.pdf`, `.docx`)
 - Ignores files with no extension and instruction files
 - Optional `coverletter.txt` support
+- Optional `suggestions.txt` support for user-provided context
 - Batch processes all jobs in the `jobs/` directory
 - RAG context extraction for richer, more relevant resumes
 - Token usage and model logging
-- Professional PDF output (WeasyPrint, Google Fonts)
+- Professional PDF output (WeasyPrint, Google Fonts, strict classic layout, compact font/spacing)
 - Experimental docx output (python-docx)
 - Robust error handling and logging
 - No fabricated achievements; visible URLs in contact info
+- Strict separation of Education, Certifications, Awards, and Honors sections
 - Comprehensive README and LICENSE
 
 ## Quickstart
@@ -41,6 +43,7 @@ Automate the process of generating tailored, AI-powered resumes for each job lis
 
    - Place all resume files in the `in/` directory (`.md`, `.txt`, `.pdf`, `.docx`)
    - Add an optional `coverletter.txt` to `in/`
+   - Add an optional `suggestions.txt` to `in/` for extra context
    - Place job descriptions in the `jobs/` directory
 
 5. **Run the script:**
@@ -68,8 +71,12 @@ Automate the process of generating tailored, AI-powered resumes for each job lis
 - All resume files in `in/` are combined for context
 - Instruction files (no extension) are ignored
 - Cover letter is optional and loaded from `in/coverletter.txt`
+- Suggestions file is optional and loaded from `in/suggestions.txt`
+- PDF output uses strict, compact, classic layout for professional results
+- Education, Certifications, Awards, and Honors are always kept as separate sections
+- No fabricated achievements or information
 
-## Pre-Publish Checklist
+## Checklist
 
 - [x] Modular CLI structure
 - [x] Loads all resume files from `in/` directory
@@ -77,10 +84,12 @@ Automate the process of generating tailored, AI-powered resumes for each job lis
 - [x] Batch processes all jobs in `jobs/`
 - [x] RAG context extraction for richer resumes
 - [x] Token usage and model logging
-- [x] Professional PDF output (WeasyPrint, Google Fonts)
+- [x] Professional PDF output (WeasyPrint, Google Fonts, strict classic layout, compact font/spacing)
 - [x] Experimental docx output (python-docx)
 - [x] Robust error handling and logging
 - [x] No fabricated achievements; visible URLs in contact info
+- [x] Strict separation of Education, Certifications, Awards, and Honors sections
+- [x] Optional suggestions file for user-provided context
 - [x] Comprehensive README and LICENSE
 
 ## License

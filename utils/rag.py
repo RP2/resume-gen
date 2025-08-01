@@ -38,33 +38,45 @@ def extract_keywords(text: str, top_n: int = 10) -> List[str]:
 
 from typing import List, Tuple, Optional
 
-def most_relevant_resume_sections(resume: str, job: str, section_headers: Optional[List[str]] = None, top_k: int = 5) -> List[str]:
-    """Split resume into sections, rank by similarity to job post, and return the most relevant. Also include awards, certifications, and notable projects."""
+def most_relevant_resume_sections(resume: str, job: str, section_headers: Optional[List[str]] = None, top_k: int = 10) -> List[str]:
+    """Split resume into granular subsections, rank by similarity to job post, and return the most relevant. Also include awards, certifications, notable projects, interests, links, and contact info."""
     if not resume or not job:
         logging.warning("Empty resume or job description provided to most_relevant_resume_sections.")
         return [resume]
     if section_headers is None:
-        section_headers = ["Experience", "Projects", "Skills", "Summary", "Education", "Awards", "Certifications"]
-    # Try markdown headers first
+        section_headers = [
+            "Experience", "Work Experience", "Professional Experience", "Education", "Skills", "Projects", "Certifications", "Awards", "Honors", "Interests", "Volunteer", "Publications", "Contact", "GitHub", "Website", "Links"
+        ]
+    # Flexible heading detection: markdown, ALL CAPS, headings ending with colon
+    heading_patterns = [
+        rf'##?\s*{header}.*?(?=\n##? |\Z)' for header in section_headers
+    ]
+    heading_patterns += [
+        r'^[A-Z][A-Z\s]+$',                # ALL CAPS headings
+        r'^.+:$',                          # Headings ending with colon
+    ]
     sections = []
-    for header in section_headers:
-        pattern = rf'##? {header}.*?(?=\n##? |\Z)'  # Markdown section
-        match = re.search(pattern, resume, re.DOTALL | re.IGNORECASE)
-        if match:
-            sections.append(match.group(0))
-    # If no markdown sections found, try splitting by blank lines or numbered sections
+    for pat in heading_patterns:
+        matches = list(re.finditer(pat, resume, re.MULTILINE | re.DOTALL | re.IGNORECASE))
+        for match in matches:
+            section = match.group(0)
+            if len(section.strip()) > 40:
+                # Granular split: break section into subsections by blank lines or bullet points
+                subsections = re.split(r'\n{2,}|^\s*[-*]\s+', section, flags=re.MULTILINE)
+                for sub in subsections:
+                    if len(sub.strip()) > 40:
+                        sections.append(sub.strip())
+    # Fallback: split by blank lines if no headings found
     if not sections:
-        # Remove repeated headers and page numbers
         cleaned = re.sub(r'Page \d+|\f|\n+', '\n', resume)
-        # Split by two or more newlines
         raw_sections = re.split(r'\n{2,}', cleaned)
-        # Remove very short sections and duplicates
         sections = [s.strip() for s in raw_sections if len(s.strip()) > 40]
         sections = list(dict.fromkeys(sections))
-    # Always include awards, certifications, and notable projects if present
+    # Always include sections with URLs or key terms
+    extra_keywords = ["award", "certification", "notable project", "interest", "github", "website", "link", "honor", "volunteer", "publication", "contact"]
     extra_sections = []
     for s in sections:
-        if re.search(r'award|certification|notable project', s, re.IGNORECASE):
+        if any(re.search(k, s, re.IGNORECASE) for k in extra_keywords) or re.search(r'https?://', s):
             extra_sections.append(s)
     if not sections:
         logging.warning("No sections found in resume; using entire resume as fallback.")
@@ -74,10 +86,8 @@ def most_relevant_resume_sections(resume: str, job: str, section_headers: Option
         job_emb = _embedder.encode(job, convert_to_tensor=True)
         section_embs = _embedder.encode(sections, convert_to_tensor=True)
         scores = util.pytorch_cos_sim(job_emb, section_embs)[0]
-        # Get top_k most relevant
         top_indices = scores.argsort(descending=True)[:top_k]
         selected = [sections[i] for i in top_indices]
-        # Add extra sections if not already included
         for s in extra_sections:
             if s not in selected:
                 selected.append(s)

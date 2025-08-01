@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from utils.parser import read_file, read_job_files
 from utils.pdf import html_to_pdf
 from utils.llm import call_ai_provider
-from utils.rag import build_rag_context
+from utils.rag import most_relevant_resume_sections
 from utils.pdf_style import inject_resume_css
 from utils.prompt import build_resume_prompt
 from PyPDF2 import PdfReader
@@ -110,16 +110,16 @@ def count_tokens(text: str, model: str = "gpt-4o") -> int:
 
 
 def generate_resume_content(base_resume: str, job: str, provider: str, api_key: str, model: str, coverletter: str = "") -> str:
-    keywords, relevant_sections, job_summary = build_rag_context(base_resume, job)
+    # Use most_relevant_resume_sections to get relevant sections for the resume
+    relevant_sections = most_relevant_resume_sections(base_resume, job)
+    keywords = ', '.join([k.strip() for k in re.split(r'[\n,;]+', job) if k.strip()])
+    job_summary = job[:200]  # Example: first 200 chars as summary
     # Debug: Print extracted context for troubleshooting
     print("--- RAG Context ---")
     print(f"Keywords: {keywords}")
     print(f"Relevant Sections: {relevant_sections}")
     print(f"Job Summary: {job_summary}")
     print("-------------------")
-    # Ensure skill list is comma-separated
-    if isinstance(keywords, str):
-        keywords = ', '.join([k.strip() for k in re.split(r'[\n,;]+', keywords) if k.strip()])
     prompt = build_resume_prompt(keywords, relevant_sections, job_summary, coverletter)
     prompt_tokens = count_tokens(prompt, model)
     print(f"Prompt tokens: {prompt_tokens}")
