@@ -2,13 +2,17 @@ def build_resume_prompt(keywords: str, relevant_sections: list, job_summary: str
     coverletter_instruction = ""
     if coverletter:
         coverletter_instruction = (
-            "\n- Use the writing style, tone, and any relevant details from the provided cover letter as additional context, especially for the summary and overall resume tone. Do not include the cover letter text in the resume itself. Incorporate any specific examples or anecdotes from the cover letter that demonstrate the candidate's qualifications, rephrasing as needed for resume style."
-            "\n\nCOVER LETTER CONTEXT:\n" + coverletter + "\n"
+            "- Use the writing style, tone, and any relevant details from the provided cover letter as additional context, especially for the summary and overall resume tone. "
+            "Do not include the cover letter text in the resume itself. Incorporate any specific examples or anecdotes from the cover letter that demonstrate the candidate's qualifications, "
+            "rephrasing as needed for resume style.\n"
+            "COVER LETTER CONTEXT:\n" + coverletter.strip()
         )
     suggestions_instruction = ""
     if suggestions:
         suggestions_instruction = (
-            "\n- Use the following user-provided suggestions to enhance the resume, but do not fabricate information. Only include details that are supported by the resume or job description, or that clarify or expand on existing content.\n\nSUGGESTIONS CONTEXT:\n" + suggestions + "\n"
+            "- Use the following user-provided suggestions to enhance the resume, but do not fabricate information. "
+            "Only include details that are supported by the resume or job description, or that clarify or expand on existing content.\n"
+            "SUGGESTIONS CONTEXT:\n" + suggestions.strip()
         )
     prompt = f"""
 You are an expert resume writer and career coach. Rewrite and tailor the resume below to perfectly match the job description, maximizing the candidate's chances of getting an interview. Your output must be a complete, ready-to-use HTML resume that highlights the candidate's most relevant experience, skills, and achievements. Do not include any commentary or explanation—only the HTML resume.
@@ -17,7 +21,7 @@ IMPORTANT JOB REQUIREMENTS:
 {keywords}
 
 MOST RELEVANT RESUME SECTIONS:
-{chr(10).join(relevant_sections)}
+{'\n'.join(relevant_sections)}
 
 JOB SUMMARY:
 {job_summary}
@@ -42,7 +46,12 @@ CONTENT & TAILORING:
     - Awards
     - Honors
     - Do not merge or combine these sections. Each should have its own heading and content.
-- Use only semantic HTML tags (header, main, section, h1, h2, h3, ul, li, etc.) and avoid custom classes unless specified in the CSS. Do not use flexbox, grid, or advanced CSS features. Use simple, ATS-friendly markup.
+- Use semantic HTML tags (header, main, section, h1, h2, h3, ul, li, etc.) and avoid custom classes unless specified in the CSS. For bullet points:
+  * Always use proper &lt;ul&gt; and &lt;li&gt; tags for bullet lists
+  * Each bullet point should be wrapped in &lt;li&gt; tags
+  * Never use hyphens or other characters to create manual bullets
+  * Nest lists properly when needed using &lt;ul&gt; inside &lt;li&gt; tags
+Do not use flexbox, grid, or advanced CSS features. Use simple, ATS-friendly markup.
 
 FORMATTING & STRUCTURE:
 - Use standard section headings and avoid tables, images, or non-standard formatting for ATS compatibility.
