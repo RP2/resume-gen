@@ -38,7 +38,7 @@ def extract_keywords(text: str, top_n: int = 10) -> List[str]:
 
 from typing import List, Tuple, Optional
 
-def most_relevant_resume_sections(resume: str, job: str, section_headers: Optional[List[str]] = None, top_k: int = 10) -> List[str]:
+def most_relevant_resume_sections(resume: str, job: str, section_headers: Optional[List[str]] = None, top_k: int = 15) -> List[str]:
     """Split resume into granular subsections, rank by similarity to job post, and return the most relevant. Also include awards, certifications, notable projects, interests, links, and contact info."""
     if not resume or not job:
         logging.warning("Empty resume or job description provided to most_relevant_resume_sections.")

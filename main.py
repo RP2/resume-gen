@@ -109,7 +109,7 @@ def count_tokens(text: str, model: str = "gpt-4o") -> int:
     return len(enc.encode(text))
 
 
-def generate_resume_content(base_resume: str, job: str, provider: str, api_key: str, model: str, coverletter: str = "") -> str:
+def generate_resume_content(base_resume: str, job: str, provider: str, api_key: str, model: str, coverletter: str = "", suggestions: str = "") -> str:
     # Use most_relevant_resume_sections to get relevant sections for the resume
     relevant_sections = most_relevant_resume_sections(base_resume, job)
     keywords = ', '.join([k.strip() for k in re.split(r'[\n,;]+', job) if k.strip()])
@@ -120,7 +120,7 @@ def generate_resume_content(base_resume: str, job: str, provider: str, api_key: 
     print(f"Relevant Sections: {relevant_sections}")
     print(f"Job Summary: {job_summary}")
     print("-------------------")
-    prompt = build_resume_prompt(keywords, relevant_sections, job_summary, coverletter)
+    prompt = build_resume_prompt(keywords, relevant_sections, job_summary, coverletter, suggestions)
     prompt_tokens = count_tokens(prompt, model)
     print(f"Prompt tokens: {prompt_tokens}")
     response = call_ai_provider(prompt, provider, api_key, model)
@@ -147,18 +147,25 @@ def main():
     os.makedirs(args.output, exist_ok=True)
     resumes = get_all_resumes(args.input)
     coverletter_path = os.path.join(args.input, "coverletter.txt")
+    suggestions_path = os.path.join(args.input, "suggestions.txt")
     if os.path.exists(coverletter_path):
         print(f"Extracting text from cover letter: {coverletter_path}")
         coverletter = read_file(coverletter_path)
         print(f"Cover letter preview: {coverletter[:120].strip()}...\n")
     else:
         coverletter = ""
-    combined_resume = '\n\n'.join([content for fname, content in resumes if fname != "coverletter.txt"])
+    if os.path.exists(suggestions_path):
+        print(f"Extracting text from suggestions: {suggestions_path}")
+        suggestions = read_file(suggestions_path)
+        print(f"Suggestions preview: {suggestions[:120].strip()}...\n")
+    else:
+        suggestions = ""
+    combined_resume = '\n\n'.join([content for fname, content in resumes if fname != "coverletter.txt" and fname != "suggestions.txt"])
     print(f"Combined resume content length: {len(combined_resume)} characters")
     jobs = read_job_files(args.jobs)
     for job_name, job_text in jobs:
         print(f"Generating resume for {job_name}...")
-        resume_html = generate_resume_content(combined_resume, job_text, provider, api_key, model, coverletter)
+        resume_html = generate_resume_content(combined_resume, job_text, provider, api_key, model, coverletter, suggestions)
         resume_html = inject_resume_css(resume_html)
         if args.docx and html_to_docx:
             docx_name = f"{os.path.splitext(job_name)[0]}_resume.docx"
